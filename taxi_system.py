@@ -478,7 +478,7 @@ class admin:
                 aac=StringVar()
                 aac = x[j]
                 e = Label(self.DriverDetailsFrame,width=9,text=aac, bd=8, fg='white',bg='black') 
-                e.grid(row=i,column=j)
+                e.grid(row=i,column=j) 
             i+=1
 
 class driver():

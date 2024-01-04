@@ -10,7 +10,7 @@ import mysql.connector
 import pymysql  
 
 
-class client:
+class client: 
     def __init__(self,root):
         self.root = root
         self.root.title("Taxi Booking System")
@@ -31,7 +31,7 @@ class client:
         self.reset_counter=0
 
         Firstname=StringVar()
-        Surname=StringVar()
+        PickupTime=StringVar()
         Mobile=StringVar()
         Email=StringVar()
 
@@ -70,7 +70,7 @@ class client:
             Km.set("0")
             
             Firstname.set("")
-            Surname.set("")
+            PickupTime.set("12 00 AM")
             Mobile.set("")
             Email.set("")
 
@@ -79,7 +79,7 @@ class client:
             self.txtReceipt3.delete("1.0",END)
             self.txtReceipt4.delete("1.0",END)
 
-            self.ride_status.delete("1.0",END)
+            self.ride_status.config(text="")
             
             var2.set(0)
             
@@ -109,7 +109,7 @@ class client:
             d_recept = Receipt_Ref.get()
             d_order_date = DateofOrder.get()
             d_f_name = Firstname.get()
-            d_l_name = Surname.get()
+            d_p_time = PickupTime.get()
             d_mobile = Mobile.get()
             d_email =  Email.get()
             d_pickup = varl1.get()
@@ -117,7 +117,8 @@ class client:
             d_no_of_passanger = varl3.get()
             d_cost = self.tot
 
-            self.ride_status.insert(END,"Searching Taxi")            
+
+            self.ride_status.config(text="booking")          
             
             mydb = mysql.connector.connect(
             host="localhost",
@@ -127,9 +128,8 @@ class client:
             )
 
             mycursor = mydb.cursor()
-            sql = "INSERT INTO client_booking (recept_id, first_name, last_name, date, mobile, email, pickup, drop_location, passanger_count, cost) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-            # val = ("John", "Highway 21")
-            mycursor.execute(sql,( d_recept, d_f_name, d_l_name, d_order_date, d_mobile, d_email, d_pickup, d_drop, d_no_of_passanger, d_cost))
+            sql = "INSERT INTO client_booking (recept_id, first_name, pickup_time, date, mobile, email, pickup, drop_location, passanger_count, cost) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+            mycursor.execute(sql,( d_recept, d_f_name, d_p_time, d_order_date, d_mobile, d_email, d_pickup, d_drop, d_no_of_passanger, d_cost))
             
             mydb.commit()
             messagebox.showinfo('Success', 'Booking Confirmed')
@@ -137,7 +137,7 @@ class client:
 
 
         def receipt():
-            if self.reset_counter == 0 and Firstname.get()!="" and Surname.get()!="" and Mobile.get()!=""  and Email.get()!="":
+            if self.reset_counter == 0 and Firstname.get()!="" and PickupTime.get()!="" and Mobile.get()!=""  and Email.get()!="":
                 self.txtReceipt1.delete("1.0",END)
                 self.txtReceipt2.delete("1.0",END)
                 self.txtReceipt3.delete("1.0",END)
@@ -152,8 +152,8 @@ class client:
                 self.txtReceipt2.insert(END, DateofOrder.get() + "     \n")
                 self.txtReceipt1.insert(END,'Firstname:\n')
                 self.txtReceipt2.insert(END, Firstname.get() + "     \n")
-                self.txtReceipt1.insert(END,'Surname:\n')
-                self.txtReceipt2.insert(END, Surname.get() + "     \n")     
+                self.txtReceipt1.insert(END,'PickUP Time:\n')
+                self.txtReceipt2.insert(END, PickupTime.get() + "     \n")     
                 self.txtReceipt3.insert(END,'Mobile:\n')
                 self.txtReceipt4.insert(END, Mobile.get() + "\n")
                 self.txtReceipt1.insert(END,'Email:\n')
@@ -228,15 +228,28 @@ class client:
         
     #=========================================================CustomerName====================================================
 
-        self.lblFirstname=Label(CustomerName,font=('arial',14,'bold'),bg='black',fg='white',text="Firstname",bd=7)
+        self.lblFirstname=Label(CustomerName,font=('arial',14,'bold'),bg='black',fg='white',text="User Name",bd=7)
         self.lblFirstname.grid(row=0,column=0,sticky=W)
         self.txtFirstname=Entry(CustomerName,font=('arial',14,'bold'),textvariable=Firstname,bd=7,insertwidth=2,justify=RIGHT)
         self.txtFirstname.grid(row=0,column=1)
 
-        self.lblSurname=Label(CustomerName,font=('arial',14,'bold'),bg='black',fg='white',text="Surname",bd=7)
-        self.lblSurname.grid(row=1,column=0,sticky=W)
-        self.txtSurname=Entry(CustomerName,font=('arial',14,'bold'),textvariable=Surname,bd=7,insertwidth=2,justify=RIGHT)
-        self.txtSurname.grid(row=1,column=1,sticky=W)
+
+        def on_enter(e):
+            self.txtPickupTime.delete (0, 'end')
+
+        def on_leave(e):
+            self.time=self.txtPickupTime.get()
+            if self.time=='':
+                self.txtPickupTime.insert(0, '12 00 AM  ')
+
+        self.lblPickupTime=Label(CustomerName,font=('arial',14,'bold'),bg='black',fg='white',text="PickUp Time",bd=7)
+        self.lblPickupTime.grid(row=1,column=0,sticky=W)
+        self.txtPickupTime=Entry(CustomerName,font=('arial',14,'bold'),textvariable=PickupTime,bd=7,insertwidth=2,justify=RIGHT)
+        self.txtPickupTime.grid(row=1,column=1,sticky=W)
+        self.txtPickupTime.insert(0, '12 00 AM  ')
+
+        self.txtPickupTime.bind('<FocusIn>', on_enter)
+        self.txtPickupTime.bind('<FocusOut>', on_leave)
 
         self.lblMobile=Label(CustomerName,font=('arial',14,'bold'),bg='black',fg='white',text="Mobile",bd=7)
         self.lblMobile.grid(row=2,column=0,sticky=W)
@@ -303,7 +316,7 @@ class admin:
     def __init__(self,root):
         self.root = root
         self.root.title("Admins System")
-        self.root.geometry("1250x600+320+200") 
+        self.root.geometry("1350x680+0+0") 
         self.root.configure(background='black')
 
 
@@ -322,14 +335,45 @@ class admin:
         Button(self.MainFrame,text="REFRESH",command=self.refresh,bg='black',relief=RIDGE,bd=5,fg='blue',font=('arial',15,'bold')).pack()
 
     #================================================customerframedetail=============================================================
-        self.AdminDetailsFrame=LabelFrame(self.MainFrame, width=1350,height=500,bd=20,bg='black', pady=5, relief=RIDGE)
+        self.AdminDetailsFrame=LabelFrame(self.MainFrame, width=1350,height=600,bd=20,bg='black', pady=5, relief=RIDGE)
         self.AdminDetailsFrame.pack(side=BOTTOM,fill=BOTH,expand=True)
 
-        self.CustomerDetailsFrame=LabelFrame(self.AdminDetailsFrame,text="Customer's Request",fg="white", width=1350,height=100,bd=10,bg='black', pady=3, relief=RIDGE)
-        self.CustomerDetailsFrame.pack(side=TOP,fill=BOTH,expand=True)
+        self.CustomerDetailsFrame=LabelFrame(self.AdminDetailsFrame,text="Customer's Request",fg="white", width=100,height=100,bd=10,bg='black', pady=3, relief=RIDGE)
+        self.CustomerDetailsFrame.pack(side=TOP,fill=X,expand=False)
 
         self.DriverDetailsFrame=LabelFrame(self.AdminDetailsFrame,text="Driver's Detail", width=1350,fg="white",height=300,bd=10,bg='black', pady=3, relief=RIDGE)
-        self.DriverDetailsFrame.pack(side=BOTTOM,fill=BOTH,expand=True)
+        self.DriverDetailsFrame.pack(side=BOTTOM,fill=X,expand=False)
+
+        canvas = Canvas(self.CustomerDetailsFrame,bg='black')
+        scrollbar = Scrollbar(self.CustomerDetailsFrame, orient="vertical", command=canvas.yview)
+        self.scrollable_frame = Frame(canvas,bg='black')
+
+        self.scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+
+        canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        
+        canvasdriver = Canvas(self.DriverDetailsFrame,bg='black')
+        scrollbardriver = Scrollbar(self.DriverDetailsFrame, orient="vertical", command=canvasdriver.yview)
+        self.scrollabledriver = Frame(canvasdriver,bg='black')
+
+        self.scrollabledriver.bind(
+            "<Configure>",
+            lambda e: canvasdriver.configure(scrollregion=canvasdriver.bbox("all"))
+        )
+
+        canvasdriver.create_window((0, 0), window=self.scrollabledriver, anchor="nw")
+        canvasdriver.configure(yscrollcommand=scrollbardriver.set)
+
+        canvasdriver.pack(side="left", fill="both", expand=True)
+        scrollbardriver.pack(side="right", fill="y")
 
         
     
@@ -337,24 +381,26 @@ class admin:
     def refresh(self):
         ######
     
-        e=Label(self.CustomerDetailsFrame,width=8,text='Recept Id',bd=2,font=("",12,'bold'), relief='ridge',anchor='w',bg='black',fg='blue')
+        e=Label(self.scrollable_frame,width=8,text='Recept Id',bd=2,font=("",12,'bold'), relief='ridge',anchor='w',bg='black',fg='blue')
         e.grid(row=0,column=0)
-        e=Label(self.CustomerDetailsFrame,width=10,text='User Name',bd=2,font=("",12,'bold'),padx=5, relief='ridge',anchor='w',bg='black',fg='blue')
+        e=Label(self.scrollable_frame,width=10,text='User Name',bd=2,font=("",12,'bold'),padx=5, relief='ridge',anchor='w',bg='black',fg='blue')
         e.grid(row=0,column=1)
-        e=Label(self.CustomerDetailsFrame,width=8,text='Date',bd=2,font=("",12,'bold'),padx=5, relief='ridge',anchor='w',bg='black',fg='blue')
+        e=Label(self.scrollable_frame,width=10,text='Pickup Time',bd=2,font=("",12,'bold'),padx=5, relief='ridge',anchor='w',bg='black',fg='blue')
         e.grid(row=0,column=2)
-        e=Label(self.CustomerDetailsFrame,width=11,text='Mobile No',bd=2,font=("",12,'bold'),padx=5, relief='ridge',anchor='w',bg='black',fg='blue')
+        e=Label(self.scrollable_frame,width=8,text='Date',bd=2,font=("",12,'bold'),padx=5, relief='ridge',anchor='w',bg='black',fg='blue')
         e.grid(row=0,column=3)
-        e=Label(self.CustomerDetailsFrame,width=16,text='Email',bd=2,font=("",12,'bold'),padx=15, relief='ridge',anchor='w',bg='black',fg='blue')
+        e=Label(self.scrollable_frame,width=11,text='Mobile No',bd=2,font=("",12,'bold'),padx=5, relief='ridge',anchor='w',bg='black',fg='blue')
         e.grid(row=0,column=4)
-        e=Label(self.CustomerDetailsFrame,width=13,text='PickUP Location',bd=2,font=("",12,'bold'),padx=5, relief='ridge',anchor='w',bg='black',fg='blue')
+        e=Label(self.scrollable_frame,width=16,text='Email',bd=2,font=("",12,'bold'),padx=15, relief='ridge',anchor='w',bg='black',fg='blue')
         e.grid(row=0,column=5)
-        e=Label(self.CustomerDetailsFrame,width=12,text='Drop Location',bd=2,font=("",12,'bold'),padx=5, relief='ridge',anchor='w',bg='black',fg='blue')
+        e=Label(self.scrollable_frame,width=13,text='PickUP Location',bd=2,font=("",12,'bold'),padx=5, relief='ridge',anchor='w',bg='black',fg='blue')
         e.grid(row=0,column=6)
-        e=Label(self.CustomerDetailsFrame,width=4,text='Cost',bd=2,font=("",12,'bold'),padx=5, relief='ridge',anchor='w',bg='black',fg='blue')
+        e=Label(self.scrollable_frame,width=12,text='Drop Location',bd=2,font=("",12,'bold'),padx=5, relief='ridge',anchor='w',bg='black',fg='blue')
         e.grid(row=0,column=7)
-        e=Label(self.CustomerDetailsFrame,width=12,text='Drivers Activity',bd=2,font=("",12,'bold'),padx=5, relief='ridge',anchor='w',bg='black',fg='blue')
+        e=Label(self.scrollable_frame,width=4,text='Cost',bd=2,font=("",12,'bold'),padx=5, relief='ridge',anchor='w',bg='black',fg='blue')
         e.grid(row=0,column=8)
+        e=Label(self.scrollable_frame,width=12,text='Drivers Activity',bd=2,font=("",12,'bold'),padx=5, relief='ridge',anchor='w',bg='black',fg='blue')
+        e.grid(row=0,column=9)
         
         ##########
         def send_message(client_id, driver_id):
@@ -366,27 +412,26 @@ class admin:
             database="spide_login"
             )
 
-            mycursor = mydb.cursor()
-
-            sql_part_1 = f"CREATE TABLE IF NOT EXISTS driver_{driver_id} (id INT ,user_name VARCHAR(50),date VARCHAR(50), phne_num  VARCHAR(50))"
-            sql_part_2 = f"ALTER TABLE driver_{driver_id} ADD COLUMN pickup VARCHAR(50), drop_location VARCHAR(50), total_cash VARCHAR(50))"
-
-            mycursor.execute(sql_part_1)
-            mycursor.execute(sql_part_2)
-            # myresult = mycursor.fetchall()
-            
-            sql = f"SELECT recept_id, first_name, date, mobile, pickup, drop_location, cost FROM client_booking WHERE id={client_id}"
+            mycursor = mydb.cursor()            
+            sql = f"SELECT recept_id, first_name, date, mobile, pickup, drop_location, cost, pickup_time FROM client_booking WHERE id={client_id}"
             mycursor.execute(sql)
             myresult = mycursor.fetchall()
 
             i = 1
             # j=0
             for x in myresult: 
-                # print (myresult)
-                sql = f"INSERT INTO driver_{driver_id} (id ,user_name, date, phne_num ,pickup, drop_location, total_cash) VALUES (%s, %s, %s, %s, %s, %s, %s)"
+                # print (x)
+                # sql = f"INSERT INTO driver_{driver_id} (id ,user_name, date, phne_num ,pickup, drop_location, total_cash) VALUES(%s, %s, %s, %s, %s, %s, %s)"
+                sql = f"INSERT INTO driver_{driver_id} (id, user_name, date, phne_num, pickup, drop_location, total_cash , pickup_time) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+                # sql = f"INSERT INTO driver_{driver_id} (id, user_name, date, phne_num, pickup, drop_location, total_cash) VALUES (%d, %s, %s, %d, %s, %s, %d)"
+
                 mycursor.execute(sql, x)
                 mydb.commit()
                 i+=1
+            
+            messagebox.showinfo("Success", "Request Sent Successfully")
+            send_button.config(text="Sent To Driver",bg='red')
+            send_button.config(state="disabled")
 
         conn = mysql.connector.connect(
             host='localhost',
@@ -402,54 +447,58 @@ class admin:
 
         cursor.execute("SELECT id FROM driver_database")
         all_drivers_id = cursor.fetchall()
-        # print ( all_drivers_id )
-        # Display clients in a table format with OptionMenu and Send button for each row
+        ids_driver = [item[0] for item in all_drivers_id]
+
+        print(rows)
+
         for i, row in enumerate(rows):
             client_id = row[0]
             client_recept = row[1]
             client_name = row[2]
-            client_date = row[4]
-            client_phone_num = row[5]
-            client_email = row[6]
-            client_pickup = row[7]
-            client_drop = row[8]
-            client_passnger_count = row[9]
-            client_cost = row[10]
-            driver_ids = all_drivers_id  # Replace this with actual driver IDs fetched from the database
+            client_pickup_time = row[9]
+            client_date = row[3]
+            client_phone_num = row[4]
+            client_email = row[5]
+            client_pickup = row[6]
+            client_drop = row[7]
+            client_cost = row[8]
+            
 
             # Display client information
-            Label(self.CustomerDetailsFrame, text=client_recept,bg='black',fg='white').grid(row=i+1, column=0)
-            Label(self.CustomerDetailsFrame,bg='black',fg='white', text=client_name).grid(row=i+1, column=1)
-            Label(self.CustomerDetailsFrame,bg='black',fg='white', text=client_date).grid(row=i+1, column=2)
-            Label(self.CustomerDetailsFrame,bg='black',fg='white', text=client_phone_num).grid(row=i+1, column=3)
-            Label(self.CustomerDetailsFrame,bg='black',fg='white', text=client_email).grid(row=i+1, column=4)
-            Label(self.CustomerDetailsFrame,bg='black',fg='white', text=client_pickup).grid(row=i+1, column=5)
-            Label(self.CustomerDetailsFrame,bg='black',fg='white', text=client_drop).grid(row=i+1, column=6)
-            Label(self.CustomerDetailsFrame,bg='black',fg='white', text=client_cost).grid(row=i+1, column=7)
+            Label(self.scrollable_frame,bg='black',fg='white', text=client_recept).grid(row=i+1, column=0)
+            Label(self.scrollable_frame,bg='black',fg='white', text=client_name).grid(row=i+1, column=1)
+            Label(self.scrollable_frame,bg='black',fg='white', text=client_pickup_time).grid(row=i+1, column=2)
+            Label(self.scrollable_frame,bg='black',fg='white', text=client_date).grid(row=i+1, column=3)
+            Label(self.scrollable_frame,bg='black',fg='white', text=client_phone_num).grid(row=i+1, column=4)
+            Label(self.scrollable_frame,bg='black',fg='white', text=client_email).grid(row=i+1, column=5)
+            Label(self.scrollable_frame,bg='black',fg='white', text=client_pickup).grid(row=i+1, column=6)
+            Label(self.scrollable_frame,bg='black',fg='white', text=client_drop).grid(row=i+1, column=7)
+            Label(self.scrollable_frame,bg='black',fg='white', text=client_cost).grid(row=i+1, column=8)
 
             # Create OptionMenu for driver IDs
             driver_var = StringVar(self.root)
             driver_var.set("Select Drivers ID")  # Set default driver ID
-            driver_menu = OptionMenu(self.CustomerDetailsFrame, driver_var, *driver_ids)
-            driver_menu.grid(row=i+1, column=8)
+            # id_test = [1,2,3,4]
+            driver_menu = OptionMenu(self.scrollable_frame, driver_var, *ids_driver)
+            driver_menu.grid(row=i+1, column=9)
 
             # Create Send button
-            send_button = Button(self.CustomerDetailsFrame, text="Send",font=("",13,"bold"),bg="black",fg="blue", relief='ridge',bd=4, command=lambda client_id=client_id, driver_id=driver_var: send_message(client_id, driver_id.get()))
-            send_button.grid(row=i+1, column=9)
+            send_button = Button(self.scrollable_frame, text="Send",font=("",13,"bold"),bg="black",fg="blue", relief='ridge',bd=4, command=lambda client_id=client_id, driver_id=driver_var: send_message(client_id, driver_id.get()))
+            send_button.grid(row=i+1, column=10)
 
         # Close database connection
         conn.close()
 
 
-        e=Label(self.DriverDetailsFrame,width=8,text='Drivers Id',bd=2,font=("",12,'bold'), relief='ridge',anchor='w',bg='black',fg='blue')
+        e=Label(self.scrollabledriver,width=8,text='Drivers Id',bd=2,font=("",12,'bold'), relief='ridge',anchor='w',bg='black',fg='blue')
         e.grid(row=0,column=0)
-        e=Label(self.DriverDetailsFrame,width=8,text='User Name',bd=2,font=("",12,'bold'), relief='ridge',anchor='w',bg='black',fg='blue')
+        e=Label(self.scrollabledriver,width=8,text='User Name',bd=2,font=("",12,'bold'), relief='ridge',anchor='w',bg='black',fg='blue')
         e.grid(row=0,column=1)
-        e=Label(self.DriverDetailsFrame,width=8,text='Taxi No.',bd=2,font=("",12,'bold'), relief='ridge',anchor='w',bg='black',fg='blue')
+        e=Label(self.scrollabledriver,width=8,text='Taxi No.',bd=2,font=("",12,'bold'), relief='ridge',anchor='w',bg='black',fg='blue')
         e.grid(row=0,column=2)
-        e=Label(self.DriverDetailsFrame,width=8,text='Phone No.',bd=2,font=("",12,'bold'), relief='ridge',anchor='w',bg='black',fg='blue')
+        e=Label(self.scrollabledriver,width=8,text='Phone No.',bd=2,font=("",12,'bold'), relief='ridge',anchor='w',bg='black',fg='blue')
         e.grid(row=0,column=3)
-        e=Label(self.DriverDetailsFrame,width=8,text='Status',bd=2,font=("",12,'bold'), relief='ridge',anchor='w',bg='black',fg='blue')
+        e=Label(self.scrollabledriver,width=8,text='Status',bd=2,font=("",12,'bold'), relief='ridge',anchor='w',bg='black',fg='blue')
         e.grid(row=0,column=4)
         
         mydb = mysql.connector.connect(
@@ -470,15 +519,15 @@ class admin:
 
                 aac=StringVar()
                 aac = x[j]
-                e = Label(self.DriverDetailsFrame,width=9,text=aac, bd=8, fg='white',bg='black') 
-                e.grid(row=i,column=j)
+                e = Label(self.scrollabledriver,width=9,text=aac, bd=8, fg='white',bg='black') 
+                e.grid(row=i,column=j) 
             i+=1
 
 class driver():
     def __init__(self,root):
         self.root = root
         self.root.title("Drivers System")
-        self.root.geometry("1250x600+320+200") 
+        self.root.geometry("1150x600+100+100") 
         self.root.configure(background='black')
 
 
@@ -499,15 +548,16 @@ class driver():
         self.CustomerDetailsFrame.pack(side=BOTTOM,fill=BOTH,expand=True)
 
 
-        self.driver_signup_page()
-
+        self.driver_login_page()
 
     def driver_signup_page(self):
+        
+        self.driver_frame.destroy()
 
-        self.frame=Frame (self.CustomerDetailsFrame, width=350,height=332, bg="white",bd=10,relief=RIDGE)
-        self.frame.place(x=450, y=52)
+        self.framesignup=Frame (self.CustomerDetailsFrame, width=350,height=332, bg="white",bd=10,relief=RIDGE)
+        self.framesignup.place(x=300, y=52)
 
-        Label(self.frame, text='Registration', fg='#57a1f8', bg='white', font=('Microsoft YaHei UI Light', 23,"bold")).place(x=70, y=5)
+        Label(self.framesignup, text='Sign UP', fg='#57a1f8', bg='white', font=('Microsoft YaHei UI Light', 23,"bold")).place(x=70, y=5)
 
         #######  User Name 
         def on_enter(e):
@@ -518,13 +568,13 @@ class driver():
             if self.name=='':
                 self.user_name.insert(0, 'User Name')
 
-        self.user_name = Entry (self.frame, width=25, fg='black', border=0, bg="white", font=('Microsoft YaHei UI Light',11,'bold'))
+        self.user_name = Entry (self.framesignup, width=25, fg='black', border=0, bg="white", font=('Microsoft YaHei UI Light',11,'bold'))
         self.user_name.place(x=40, y=75)
         self.user_name.insert(0, 'User Name')
         self.user_name.bind('<FocusIn>', on_enter)
         self.user_name.bind('<FocusOut>', on_leave)
 
-        Frame (self.frame, width=260, height=1, bg='black').place(x=35, y=95)
+        Frame (self.framesignup, width=260, height=1, bg='black').place(x=35, y=95)
 
         ####### taxi number
         def on_enter(e):
@@ -535,13 +585,13 @@ class driver():
             if self.name=='':
                 self.taxi_number.insert(0, 'taxi_number')
 
-        self.taxi_number = Entry (self.frame, width=25, fg='black', border=0, bg="white", font=('Microsoft YaHei UI Light', 11,'bold'))
+        self.taxi_number = Entry (self.framesignup, width=25, fg='black', border=0, bg="white", font=('Microsoft YaHei UI Light', 11,'bold'))
         self.taxi_number.place(x=40, y=155)
         self.taxi_number.insert(0, 'taxi_number')
         self.taxi_number.bind('<FocusIn>', on_enter)
         self.taxi_number.bind('<FocusOut>', on_leave)
 
-        Frame (self.frame, width=260, height=1, bg='black').place(x=35,y=175)
+        Frame (self.framesignup, width=260, height=1, bg='black').place(x=35,y=175)
 
 
         ###### phone number
@@ -553,19 +603,20 @@ class driver():
             if self.name=='':
                 self.phone_num.insert(0,'Phone Number')
 
-        self.phone_num = Entry (self.frame, width=25, fg='black', border=0, bg="white", font=('Microsoft YaHei UI Light', 11,'bold'))
+        self.phone_num = Entry (self.framesignup, width=25, fg='black', border=0, bg="white", font=('Microsoft YaHei UI Light', 11,'bold'))
         self.phone_num.place(x=40, y=115)
         self.phone_num.insert(0,'Phone Number')
         self.phone_num.bind('<FocusIn>', on_enter)
         self.phone_num.bind('<FocusOut>', on_leave)
 
-        Frame (self.frame, width=260, height=1, bg='black').place(x=35,y=135)
-        Button (self.frame, width=39, pady=7, text='Submit Details', bg='#57a1f8',fg='white', border=0, command=self.driver_db_connect).place(x=35, y=205)
-        Button (self.frame, width=39, pady=7, text='Login', bg='black',fg='white', border=0, command=self.driver_login_page).place(x=35, y=255)
+        Frame (self.framesignup, width=260, height=1, bg='black').place(x=35,y=135)
+        Button (self.framesignup, width=39, pady=7, text='Submit Details', bg='#57a1f8',fg='white', border=0, font=('Microsoft YaHei UI Light', 8,"bold"), command=self.driver_db_connect).place(x=35, y=235)
+        # Button (self.frame, width=39, pady=7, text='Login', bg='black',fg='white', border=0, font=('Microsoft YaHei UI Light', 8,"bold"), command=self.driver_login_page).place(x=35, y=255)
        
         
     def driver_db_connect(self):
-
+        taxi_no = int(self.taxi_number.get())
+        # print(taxi_no)
         
         # mycursor.execute("CREATE TABLE driver_database (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), mobile BIGINT, taxi_number VARCHAR(255), status VARCHAR(255))")
        
@@ -577,18 +628,31 @@ class driver():
             c= conn.cursor() 
             s="INSERT INTO driver_database( name, taxi_number, mobile, status) VALUES(%s, %s, %s, %s)" 
             c.execute(s,(self.user_name.get(),self.taxi_number.get(),self.phone_num.get(),"Vacant")) 
-            conn.commit() 
-            conn.close() 
             messagebox.showinfo('success','Successfully Registered ') 
 
-            Button(self.MainFrame,text="refresh",bg='black',relief=RIDGE,bd=5,fg='blue',font=('arial',15,'bold'),command=self.driver_main).pack()
+            sql = "SELECT id FROM driver_database WHERE taxi_number = %s"
+            # sql = "SELECT * FROM customers WHERE address = %s"
+            c.execute(sql,(taxi_no,))
+            myresult = c.fetchall()
+            extracted_number = myresult[0][0]
+            # print(extracted_number)
+            
+            sql = f"CREATE TABLE IF NOT EXISTS driver_{extracted_number} (id INT, user_name VARCHAR(50), date VARCHAR(50), phne_num VARCHAR(50), pickup VARCHAR(50), drop_location VARCHAR(50), total_cash VARCHAR(50), pickup_time VARCHAR(255))"
+            c.execute(sql)
 
+            conn.commit() 
+            conn.close() 
+            
+
+            # Button(self.MainFrame,text="refresh",bg='black',relief=RIDGE,bd=5,fg='blue',font=('arial',15,'bold'),command=self.driver_main).pack()
+            self.framesignup.destroy()
             # self.driver_main()
+            self.driver_login_page()
 
     def driver_login_page(self):
         
         self.driver_frame=Frame (self.CustomerDetailsFrame, width=350,height=332, bg="white",bd=10,relief=RIDGE)
-        self.driver_frame.place(x=450, y=52)
+        self.driver_frame.place(x=300, y=52)
 
         heading = Label (self.driver_frame, text='Sign in', fg='#57a1f8', bg='white', font=('Microsoft YaHei UI Light', 23,"bold"))
         heading.place(x=100, y=5)
@@ -602,7 +666,7 @@ class driver():
             if self.name=='':
                 self.user.insert(0, 'Username')
 
-        self.user = Entry (self.driver_frame, width=25, fg='black', border=0, bg="white", font=('Microsoft YaHei UI Light',11))
+        self.user = Entry (self.driver_frame, width=25, fg='black', border=0, bg="white", font=('Microsoft YaHei UI Light',11,'bold'))
         self.user.place(x=30, y=80)
         self.user.insert(0, 'Username')
         self.user.bind('<FocusIn>', on_enter)
@@ -619,7 +683,7 @@ class driver():
             if self.name=='':
                 self.taxi_number.insert(0, 'password')
 
-        self.taxi_number = Entry (self.driver_frame, width=25, fg='black', border=0, bg="white", font=('Microsoft YaHei UI Light',11))
+        self.taxi_number = Entry (self.driver_frame, width=25, fg='black', border=0, bg="white", font=('Microsoft YaHei UI Light',11,'bold'))
         self.taxi_number.place(x=30, y=160)
         self.taxi_number.insert(0, 'Taxi Number')
         self.taxi_number.bind('<FocusIn>', on_enter)
@@ -629,13 +693,14 @@ class driver():
 
         ###############################################################
 
-        Button (self.driver_frame, width=39, pady=7, text='Sign in', bg='#57a1f8',fg='white', border=0, command=self.driver_login_connection).place(x=35, y=224)
-        print()
+        Button (self.driver_frame, width=39, pady=7, text='LogIN', bg='#57a1f8',fg='white', font=('Microsoft YaHei UI Light',8,'bold'), border=0, command=self.driver_login_connection).place(x=35, y=204)
+        Button (self.driver_frame, width=39, pady=7, text='Sign Up',fg='white',bg='black', font=('Microsoft YaHei UI Light',8,'bold'), border=0, command=self.driver_signup_page).place(x=35, y=254)
+        # print()
 
     def driver_login_connection(self):
         
         if self.user.get() == '' or self.taxi_number.get()== '' : 
-            messagebox.showerror('error', 'All fields are requiblack') 
+            messagebox.showerror('error', 'All fields are required to be filled') 
         else: 
             con=pymysql.connect(host='localhost',user='root',password='@@@SpideX2152',database='spide_login') 
             my_cursor=con.cursor() 
@@ -657,24 +722,35 @@ class driver():
                 self.driver_id = t.fetchall()
                 self.extracted_value = self.driver_id[0][0]
                 # print(extracted_value)
+                print('error')
 
-                if self.driver_id != []:
-                        n_name = self.user.get()
-                        Button(self.MainFrame,text="refresh", bg='black',fg='blue',command=lambda: self.driver_main(n_name)).pack()
-                        self.driver_frame.destroy()
-                        self.driver_main(n_name)                
-                else:
-                    messagebox.showerror('error', 'Invalid username or password')
                 
-        print()
+                # n_name = self.user.get()
+                self.driver_frame.destroy()
+                # self.driver_frame.destroy()
+                Button(self.Tops,text="refresh", bg='black',fg='blue',command=lambda: self.driver_main(self.extracted_value)).pack()
+                
+
+                # if self.driver_id != []:
+                    
+                #     n_name = self.user.get()
+                #     Button(self.MainFrame,text="refresh", bg='black',fg='blue',command=lambda: self.driver_main(n_name)).pack()
+                    # self.driver_frame.destroy()
+                    # self.driver_main(n_name)                
+                # else:
+                #     messagebox.showerror('error', 'Invalid username or password')
+
+                # Button(self.MainFrame,text="refresh", bg='black',fg='blue',command=lambda: self.driver_main(n_name)).pack()
+                
+        # print()
 
     def driver_main(self,n_name):
         mess = f"Welcome {n_name}"
         self.secframe=LabelFrame(self.CustomerDetailsFrame, text="Ride Details", width=1350,height=500,bd=5,bg='black', pady=3,padx=3,fg="white", relief=RIDGE)
         self.secframe.grid(row=1,column=0)
 
-        
-        self.frame.destroy()
+        # self.frame.destroy()
+        self.driver_frame.destroy()
         
         Label(self.CustomerDetailsFrame,text = mess, font=("",20,"bold"),bg="black",fg="blue").grid(row=0,column=0)
         
@@ -692,8 +768,10 @@ class driver():
         e.grid(row=2,column=5)
         e=Label(self.secframe,width=5,text='Cost',borderwidth=5,font=("",10,'bold'),padx=5, relief='ridge',anchor='w', bg='black',fg='blue')
         e.grid(row=2,column=6)
-        e=Label(self.secframe,width=13,text='Drivers Activity',borderwidth=5,font=("",10,'bold'),padx=5, relief='ridge',anchor='w', bg='black',fg='blue')
+        e=Label(self.secframe,width=10,text='PickUp Time',borderwidth=5,font=("",10,'bold'),padx=5, relief='ridge',anchor='w', bg='black',fg='blue')
         e.grid(row=2,column=7)
+        e=Label(self.secframe,width=13,text='Drivers Activity',borderwidth=5,font=("",10,'bold'),padx=5, relief='ridge',anchor='w', bg='black',fg='blue')
+        e.grid(row=2,column=8)
 
 
         mydb = mysql.connector.connect(
@@ -712,74 +790,74 @@ class driver():
         ##########
         i = 3
         j=0
-        print(myresult)
+
+        def driver_accept(event):
+            mydb = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="@@@SpideX2152",
+            database="spide_login"
+            )
+
+            mycursor = mydb.cursor()
+                
+            sql = f"UPDATE driver_database SET status = 'In Ride' WHERE id = {self.extracted_value} "
+
+            mycursor.execute(sql)
+
+            mydb.commit()
+                
+            # self.e_complete.config(text="In Ride")
+            event.widget.config(text="In Ride", state="disabled")
+
+                # self.e_complete.config(state='active')
+            
+        def drive_completed(event):
+                    
+            mydb = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="@@@SpideX2152",
+            database="spide_login"
+                )
+
+            mycursor = mydb.cursor()
+                
+            sql = f"UPDATE driver_database SET status = 'Vacant' WHERE id = {self.extracted_value} "
+            mycursor.execute(sql)
+            mydb.commit()
+                    
+            # self.e_complete.config(text="Completed",bg='green')
+            event.widget.config(text="Completed",bg='green')
+
+            # self.e_complete.config(state='disable')
+        # print(myresult)
         for x in myresult: 
-            print(x)
+            # print(x)
             for j in range(len(x)):
                 aac=StringVar()
                 aac = x[j]
-                print( aac )
+                # print( aac )
                 e = Label(self.secframe,text=aac, bd=8,width=7, fg='white',bg='black') 
                 e.grid(row=i,column=j)
-                
-            e = Button(self.secframe,text="Accept",font=("",9,'bold'),bg="black",fg='blue',relief="ridge",command=self.driver_accept)
-            e.grid(row=i,column=7)
+            
 
-            e = Button(self.secframe,text="Completed",font=("",9,'bold'),bg="black",fg='blue',relief="ridge",command=self.drive_completed)
-            e.grid(row=i,column=8)
+            self.e_accept = Button(self.secframe,text="Accept",font=("",9,'bold'),bg="black",fg='blue',relief="ridge",command=driver_accept)
+            self.e_accept.grid(row=i,column=8)
+            self.e_accept.bind("<Button-1>", driver_accept)
+
+            self.e_complete = Button(self.secframe,text="Pending",font=("",9,'bold'),bg="yellow",fg='blue',relief="ridge",command=drive_completed)
+            self.e_complete.grid(row=i,column=9)
+            self.e_complete.bind("<Button-1>", drive_completed)
 
             i+=1
 
 
-    def driver_accept(self):
-        mydb = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="@@@SpideX2152",
-        database="spide_login"
-        )
-
-        mycursor = mydb.cursor()
-        
-        sql = f"UPDATE driver_database SET status = 'In Ride' WHERE id = {self.extracted_value} "
-
-        mycursor.execute(sql)
-
-        mydb.commit()
-
-        sql = f"SELECT id FROM driver_{self.extracted_value}"        
-        mycursor.execute(sql)
-
-        myresult = mycursor.fetchall()
-        print(myresult)
-
-    def drive_completed(self):
-        
-        mydb = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="@@@SpideX2152",
-        database="spide_login"
-        )
-
-        mycursor = mydb.cursor()
-        
-        sql = f"UPDATE driver_database SET status = 'Vacant' WHERE id = {self.extracted_value} "
-
-        mycursor.execute(sql)
-
-        mydb.commit()
-
-        sql = f"SELECT id FROM driver_{self.extracted_value}"        
-        mycursor.execute(sql)
-
-        myresult = mycursor.fetchall()
-        print(myresult)
 
 class RegistrationForm:
     def __init__(self, root):
         self.root = root
-        self.root.geometry("870x450+300+200")
+        self.root.geometry("870x450+100+100")
         self.root.title('Registration form')
         self.root.configure(bg="black")
         self.create_widgets()
